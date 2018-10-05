@@ -23,6 +23,6 @@ func RunAPI() {
 	group.POST("/play", handlers.Play)
 
 	// Start server
-	port := infra.GetEnv("PORT", "8844")
+	port := infra.GetEnv("PORT", ":6081")
 	e.Logger.Fatal(e.Start(port))
 }
