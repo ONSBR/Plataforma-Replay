@@ -3,11 +3,16 @@ package main
 import (
 	"fmt"
 
+	"github.com/ONSBR/Plataforma-Replay/actions"
 	"github.com/ONSBR/Plataforma-Replay/api"
+	"github.com/ONSBR/Plataforma-Replay/broker"
 )
 
 func main() {
 	fmt.Println(logo())
+	go broker.Init(func(broker broker.Broker) {
+		broker.Subscribe(actions.ReceiveEvent)
+	})
 
 	api.RunAPI()
 }

@@ -8,6 +8,12 @@
   revision = "975400292798c16d4b560561b445b3c49d188564"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/PMoneda/carrot"
+  packages = ["."]
+  revision = "4a5844b49528b57aa5cf990abe2c8fec88697195"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
@@ -46,6 +52,19 @@
   version = "v0.0.4"
 
 [[projects]]
+  branch = "feature/topic-permissions"
+  name = "github.com/michaelklishin/rabbit-hole"
+  packages = ["."]
+  revision = "1ffa18cc2b8dce965a836e8b1c72fa97e0ac8a20"
+  source = "github.com/PMoneda/rabbit-hole"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/streadway/amqp"
+  packages = ["."]
+  revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
+
+[[projects]]
   name = "github.com/valyala/bytebufferpool"
   packages = ["."]
   revision = "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7"
@@ -75,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7aeb6398f6ef074a65a8cdb6167a0cb1e038ed30411c8ba5d53b47983c254261"
+  inputs-digest = "34ce87303fa931d515e8efd6d4fdaaba3ad367a2005e3c11d5d1f7117589be80"
   solver-name = "gps-cdcl"
   solver-version = 1
