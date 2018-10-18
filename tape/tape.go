@@ -1,6 +1,7 @@
 package tape
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -23,7 +24,7 @@ type Segment struct {
 	Timestamp   int64         `json:"timestamp"`
 	FileName    string        `json:"fileName"`
 	SegmentType string        `json:"segment_type"`
-	Content     *bytes.Reader `json:"-"`
+	Content     *bufio.Reader `json:"-"`
 }
 
 //Record write segment into disk and update tape.json file
@@ -65,7 +66,7 @@ func (t *Tape) RecordEvent(event *domain.Event) error {
 	}
 	ts := time.Now().Unix()
 	seg := Segment{
-		Content:     bytes.NewReader(eventJSON),
+		Content:     bufio.NewReader(bytes.NewReader(eventJSON)),
 		FileName:    fmt.Sprintf("event_%d", ts),
 		SegmentType: "event",
 		Timestamp:   ts,
@@ -74,7 +75,7 @@ func (t *Tape) RecordEvent(event *domain.Event) error {
 }
 
 //RecordReader create a segment based on reader
-func (t *Tape) RecordReader(fileName, segmentType string, reader *bytes.Reader) error {
+func (t *Tape) RecordReader(fileName, segmentType string, reader *bufio.Reader) error {
 	ts := time.Now().Unix()
 	seg := Segment{
 		Content:     reader,

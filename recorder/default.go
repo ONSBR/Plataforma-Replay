@@ -1,6 +1,8 @@
 package recorder
 
 import (
+	"bufio"
+
 	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/ONSBR/Plataforma-Replay/db"
 	"github.com/ONSBR/Plataforma-Replay/policy"
@@ -22,11 +24,15 @@ func (d *DefaultRecorder) Rec(event *domain.Event) error {
 	}
 	if !dumpAlreadyDone {
 		dbManager := db.GetDB()
-		if err := dbManager.Backup(event.SystemID, d.currentTape.Dest()); err != nil {
+		var reader *bufio.Reader
+		reader, err := dbManager.Backup(event.SystemID)
+		if err != nil {
 			log.Error(err)
+		} else {
+			d.currentTape.RecordReader("dump.sql", "dump", reader)
 		}
 	}
-	if err := d.currentTape.Record(event); err != nil {
+	if err := d.currentTape.RecordEvent(event); err != nil {
 		log.Error(err)
 	}
 	return nil
