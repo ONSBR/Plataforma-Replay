@@ -39,6 +39,24 @@ func (t *Tape) Record(seg *Segment) error {
 	return t.persist()
 }
 
+/*
+Close O método close faz o fechamento da fita para gravação quando uma fita é fechada, não será mais possível
+gravar mais nada nela, os arquivos existentes serão comprimidos no formato tar.gz
+Esse arquivo .rec será disponibilizado para outras plataformas para reproduzir alguns cenários específicos
+*/
+func (t *Tape) Close() error {
+	origin := fmt.Sprintf("%s/%s", t.Path, t.SystemID)
+	buf := bytes.NewBuffer(nil)
+	if err := compress(origin, buf); err != nil {
+		return err
+	}
+	if err := os.RemoveAll(origin); err != nil {
+		return err
+	}
+	ts := time.Now().Unix()
+	return ioutil.WriteFile(fmt.Sprintf("%s/%s_%d.rec", t.Path, t.SystemID, ts), buf.Bytes(), 0600)
+}
+
 //RecordEvent create a segment based on event and persist
 func (t *Tape) RecordEvent(event *domain.Event) error {
 	eventJSON, err := json.Marshal(event)
@@ -50,6 +68,18 @@ func (t *Tape) RecordEvent(event *domain.Event) error {
 		Content:     bytes.NewReader(eventJSON),
 		FileName:    fmt.Sprintf("event_%d", ts),
 		SegmentType: "event",
+		Timestamp:   ts,
+	}
+	return t.Record(&seg)
+}
+
+//RecordReader create a segment based on reader
+func (t *Tape) RecordReader(fileName, segmentType string, reader *bytes.Reader) error {
+	ts := time.Now().Unix()
+	seg := Segment{
+		Content:     reader,
+		FileName:    fileName,
+		SegmentType: segmentType,
 		Timestamp:   ts,
 	}
 	return t.Record(&seg)
