@@ -1,6 +1,7 @@
 package tape
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"os"
@@ -26,7 +27,7 @@ func TestShouldCheckIfTapeExist(t *testing.T) {
 
 func TestShouldGetOrCreateTape(t *testing.T) {
 	Convey("should get or create a new tape", t, func() {
-		tape, err := NewTape("123", "./")
+		tape, err := GetOrCreateTape("123", "./")
 		So(err, ShouldBeNil)
 		So(tape.exist(), ShouldBeTrue)
 		fd, err := os.OpenFile("./123/tape.json", os.O_RDONLY, os.ModePerm)
@@ -40,7 +41,7 @@ func TestShouldGetOrCreateTape(t *testing.T) {
 
 func TestShouldSaveSegments(t *testing.T) {
 	Convey("should save segments on tape", t, func() {
-		tape, err := NewTape("1123", "./")
+		tape, err := GetOrCreateTape("1123", "./")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
@@ -57,14 +58,14 @@ func TestShouldSaveSegments(t *testing.T) {
 	})
 
 	Convey("should save reader on tape", t, func() {
-		tape, err := NewTape("1234", "./")
+		tape, err := GetOrCreateTape("1234", "./")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
 		}
 
 		d, _ := json.Marshal(evt)
-		r := bytes.NewReader(d)
+		r := bufio.NewReader(bytes.NewReader(d))
 		err = tape.RecordReader("dump.txt", "dump", r)
 		So(err, ShouldBeNil)
 		So(len(tape.Segments), ShouldEqual, 1)
@@ -74,14 +75,21 @@ func TestShouldSaveSegments(t *testing.T) {
 		os.RemoveAll("./1234")
 	})
 
+	Convey("should get existing tape", t, func() {
+		GetOrCreateTape("b1234", "./")
+		_, err := GetOrCreateTape("b1234", "./")
+		So(err, ShouldBeNil)
+		os.RemoveAll("./b1234")
+	})
+
 	Convey("should close tape", t, func() {
-		tape, err := NewTape("a1234", "./")
+		tape, err := GetOrCreateTape("a1234", "./")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
 		}
 		d, _ := json.Marshal(evt)
-		r := bytes.NewReader(d)
+		r := bufio.NewReader(bytes.NewReader(d))
 		err = tape.RecordReader("dump.txt", "dump", r)
 		So(err, ShouldBeNil)
 		So(tape.Close(), ShouldBeNil)

@@ -120,8 +120,8 @@ func GetTape(systemID string) *Tape {
 	return nil
 }
 
-//NewTape creates or load a tape for a systemId
-func NewTape(systemID, path string) (*Tape, error) {
+//GetOrCreateTape creates or load a tape for a systemId
+func GetOrCreateTape(systemID, path string) (*Tape, error) {
 	tape := new(Tape)
 	tape.Path = path
 	tape.SystemID = systemID

@@ -12,16 +12,17 @@ import (
 
 var createTapePolicy policy.CreateTapePolicy
 
+const rootPath = "./"
+
 type DefaultRecorder struct {
-	currentTape *tape.Tape
 }
 
 func (d *DefaultRecorder) Rec(event *domain.Event) error {
-	dumpAlreadyDone, err := createTapePolicy.DatabaseBackupAlreadyCreated(event.SystemID)
+	currentTape, err := tape.GetOrCreateTape(event.SystemID, rootPath)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
+	dumpAlreadyDone := createTapePolicy.DatabaseBackupAlreadyCreated(currentTape)
 	if !dumpAlreadyDone {
 		dbManager := db.GetDB()
 		var reader *bufio.Reader
@@ -29,17 +30,21 @@ func (d *DefaultRecorder) Rec(event *domain.Event) error {
 		if err != nil {
 			log.Error(err)
 		} else {
-			d.currentTape.RecordReader("dump.sql", "dump", reader)
+			currentTape.RecordReader("dump.sql", "dump", reader)
 		}
 	}
-	if err := d.currentTape.RecordEvent(event); err != nil {
+	if err := currentTape.RecordEvent(event); err != nil {
 		log.Error(err)
 	}
 	return nil
 }
 
 func (d *DefaultRecorder) Eject(systemID string) (*tape.Tape, error) {
-	return nil, nil
+	currentTape, err := tape.GetOrCreateTape(systemID, rootPath)
+	if err != nil {
+		return nil, err
+	}
+	return currentTape, currentTape.Close()
 }
 
 func (d *DefaultRecorder) Insert(tape *tape.Tape) error {
