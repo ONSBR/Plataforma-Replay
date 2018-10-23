@@ -14,10 +14,11 @@ import (
 
 //Tape is datalog struct to keep all events, dump file and metadata
 type Tape struct {
-	SystemID string     `json:"system_id"`
-	Path     string     `json:"path"`
-	State    string     `json:"state"`
-	Segments []*Segment `json:"segments,omitempty"`
+	SystemID     string     `json:"system_id"`
+	Path         string     `json:"path"`
+	State        string     `json:"state"`
+	CompressFile string     `json:"compress_file"`
+	Segments     []*Segment `json:"segments,omitempty"`
 }
 
 type Segment struct {
@@ -46,6 +47,13 @@ gravar mais nada nela, os arquivos existentes serão comprimidos no formato tar.
 Esse arquivo .rec será disponibilizado para outras plataformas para reproduzir alguns cenários específicos
 */
 func (t *Tape) Close() error {
+	t.State = "closed"
+	ts := time.Now().Unix()
+	t.CompressFile = fmt.Sprintf("%s/%s_%d.rec", t.Path, t.SystemID, ts)
+	err := t.persist()
+	if err != nil {
+		return err
+	}
 	origin := fmt.Sprintf("%s/%s", t.Path, t.SystemID)
 	buf := bytes.NewBuffer(nil)
 	if err := compress(origin, buf); err != nil {
@@ -54,8 +62,7 @@ func (t *Tape) Close() error {
 	if err := os.RemoveAll(origin); err != nil {
 		return err
 	}
-	ts := time.Now().Unix()
-	return ioutil.WriteFile(fmt.Sprintf("%s/%s_%d.rec", t.Path, t.SystemID, ts), buf.Bytes(), 0600)
+	return ioutil.WriteFile(t.CompressFile, buf.Bytes(), 0600)
 }
 
 //RecordEvent create a segment based on event and persist
@@ -107,7 +114,7 @@ func (t *Tape) IsRecording() bool {
 	return t.State == "recording"
 }
 
-func (t *Tape) exist() bool {
+func (t *Tape) Exist() bool {
 	fd, err := os.Open(fmt.Sprintf("%s/%s", t.Path, t.SystemID))
 	if err != nil {
 		return false
@@ -116,17 +123,13 @@ func (t *Tape) exist() bool {
 	return true
 }
 
-func GetTape(systemID string) *Tape {
-	return nil
-}
-
 //GetOrCreateTape creates or load a tape for a systemId
 func GetOrCreateTape(systemID, path string) (*Tape, error) {
 	tape := new(Tape)
 	tape.Path = path
 	tape.SystemID = systemID
 	tape.State = "recording"
-	if !tape.exist() {
+	if !tape.Exist() {
 		err := os.Mkdir(fmt.Sprintf("%s/%s", tape.Path, systemID), os.ModePerm)
 		if err != nil {
 			return nil, err
@@ -134,6 +137,24 @@ func GetOrCreateTape(systemID, path string) (*Tape, error) {
 		if err := tape.persist(); err != nil {
 			return nil, err
 		}
+	} else {
+		tapeJSON, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/tape.json", tape.Path, systemID))
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(tapeJSON, tape); err != nil {
+			return nil, err
+		}
+	}
+	return tape, nil
+}
+
+func GetTape(systemID, path string) (*Tape, error) {
+	tape := new(Tape)
+	tape.Path = path
+	tape.SystemID = systemID
+	if !tape.Exist() {
+		return nil, fmt.Errorf("tape for system %s not exist", systemID)
 	} else {
 		tapeJSON, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/tape.json", tape.Path, systemID))
 		if err != nil {

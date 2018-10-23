@@ -1,12 +1,9 @@
 package actions
 
 import (
-	"fmt"
-
 	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/ONSBR/Plataforma-Replay/broker"
 	"github.com/ONSBR/Plataforma-Replay/recorder"
-	"github.com/ONSBR/Plataforma-Replay/tape"
 	"github.com/labstack/gommon/log"
 )
 
@@ -31,17 +28,10 @@ Observação: A ideia é que o serviço de replay não seja um gargalo de execu�
 mas a execução do processo irá continuar;
 TODO: traduzir para o inglês de forma adequada!*/
 func ReceiveEvent(event *domain.Event) error {
-	currentTape := tape.GetTape(event.SystemID)
-	recorder := recorder.GetRecorder()
-	recorder.Insert(currentTape)
-	if isClosed, err := recorder.IsClosed(); err != nil {
+	recorder := recorder.GetRecorder(event.SystemID)
+	err := recorder.Rec(event)
+	if err != nil {
 		log.Error(err)
-	} else if isClosed {
-		log.Info(fmt.Sprintf("Tape for system %s is closed", event.SystemID))
-	} else {
-		if err := recorder.Rec(event); err != nil {
-			log.Error(err)
-		}
 	}
 	brk := broker.GetBroker()
 	return brk.Publish(event)

@@ -18,9 +18,9 @@ func TestShouldCheckIfTapeExist(t *testing.T) {
 		tape := new(Tape)
 		tape.Path = "./"
 		tape.SystemID = "1223"
-		So(tape.exist(), ShouldBeFalse)
+		So(tape.Exist(), ShouldBeFalse)
 		os.Mkdir("./1223", os.ModePerm)
-		So(tape.exist(), ShouldBeTrue)
+		So(tape.Exist(), ShouldBeTrue)
 		os.RemoveAll("./1223")
 	})
 }
@@ -29,7 +29,7 @@ func TestShouldGetOrCreateTape(t *testing.T) {
 	Convey("should get or create a new tape", t, func() {
 		tape, err := GetOrCreateTape("123", "./")
 		So(err, ShouldBeNil)
-		So(tape.exist(), ShouldBeTrue)
+		So(tape.Exist(), ShouldBeTrue)
 		fd, err := os.OpenFile("./123/tape.json", os.O_RDONLY, os.ModePerm)
 		So(err, ShouldBeNil)
 		if err == nil {
@@ -106,6 +106,6 @@ func TestShouldSaveSegments(t *testing.T) {
 		}
 		So(exist, ShouldBeTrue)
 		os.Remove(fName)
-		So(tape.exist(), ShouldBeFalse)
+		So(tape.Exist(), ShouldBeFalse)
 	})
 }

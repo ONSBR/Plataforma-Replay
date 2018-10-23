@@ -19,7 +19,6 @@ func RunAPI() {
 	// Routes
 	group.POST("/startRecording/:system_id", handlers.StartRecording)
 	group.POST("/stopRecording/:system_id", handlers.StopRecording)
-	group.GET("/eject/:system_id", handlers.Eject)
 	group.POST("/play", handlers.Play)
 
 	// Start server

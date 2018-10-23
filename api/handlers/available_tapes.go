@@ -5,17 +5,13 @@ import (
 	"github.com/labstack/echo"
 )
 
-//StopRecording for an application
-func StopRecording(ctx echo.Context) error {
+//AvailableTapes return available tapes for system
+func AvailableTapes(ctx echo.Context) error {
 	systemID := ctx.Get("systemID").(string)
 	rec := recorder.GetRecorder(systemID)
-	tape, err := rec.GetTape(systemID)
+	list, err := rec.AvailableTapesToDownload(systemID)
 	if err != nil {
 		return err
 	}
-	err = tape.Close()
-	if err != nil {
-		return err
-	}
-	return ctx.JSON(201, tape)
+	return ctx.JSON(200, list)
 }
