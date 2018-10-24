@@ -15,14 +15,14 @@ func RunAPI() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	group := e.Group("v1")
-
+	tapeGroup := group.Group("/tape")
 	// Routes
-	group.POST("/startRecording/:systemId", handlers.StartRecording)
-	group.POST("/stopRecording/:systemId", handlers.StopRecording)
-	group.GET("/tape/:systemId/available", handlers.AvailableTapes)
-	group.GET("/tape/:systemId/recording", handlers.GetRecording)
-	group.GET("/tape/:systemId/download/:id", handlers.DownloadTape)
-	group.POST("/play/:systemId", handlers.Play)
+	tapeGroup.POST("/:systemId/rec", handlers.StartRecording)
+	tapeGroup.POST("/:systemId/stop", handlers.StopRecording)
+	tapeGroup.GET("/:systemId/available", handlers.AvailableTapes)
+	tapeGroup.GET("/:systemId/recording", handlers.GetRecording)
+	tapeGroup.GET("/:systemId/download/:id", handlers.DownloadTape)
+	tapeGroup.POST("/:systemId/play", handlers.Play)
 
 	// Start server
 	port := infra.GetEnv("PORT", ":6081")
