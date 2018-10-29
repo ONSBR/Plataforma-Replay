@@ -5,6 +5,7 @@ import (
 	"github.com/ONSBR/Plataforma-Replay/api/handlers"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/labstack/gommon/log"
 )
 
 //RunAPI build, config and run API
@@ -25,6 +26,7 @@ func RunAPI() {
 	tapeGroup.POST("/:systemId/play", handlers.Play)
 
 	// Start server
-	port := infra.GetEnv("PORT", ":6081")
-	e.Logger.Fatal(e.Start(port))
+	port := infra.GetEnv("PORT", "6081")
+	log.Info(port)
+	e.Logger.Fatal(e.Start(":" + port))
 }
