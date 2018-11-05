@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.ERROR)
+	log.SetLevel(log.INFO)
 	fmt.Println(logo())
 	go broker.Init(func(broker broker.Broker) {
 		broker.Subscribe(actions.ReceiveEvent)

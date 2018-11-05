@@ -7,7 +7,7 @@ import (
 
 //AvailableTapes return available tapes for system
 func AvailableTapes(ctx echo.Context) error {
-	systemID := ctx.Get("systemID").(string)
+	systemID := ctx.Param("systemID")
 	rec := recorder.GetRecorder(systemID)
 	list, err := rec.AvailableTapesToDownload(systemID)
 	if err != nil {

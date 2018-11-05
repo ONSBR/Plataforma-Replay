@@ -7,8 +7,8 @@ import (
 
 //DownloadTape return available tapes for system
 func DownloadTape(ctx echo.Context) error {
-	systemID := ctx.Get("systemID").(string)
-	tapeZipID := ctx.Get("name").(string)
+	systemID := ctx.Param("systemID")
+	tapeZipID := ctx.Param("id")
 	rec := recorder.GetRecorder(systemID)
 	return ctx.File(rec.TapePath(tapeZipID))
 }

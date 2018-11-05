@@ -18,12 +18,12 @@ func RunAPI() {
 	group := e.Group("v1")
 	tapeGroup := group.Group("/tape")
 	// Routes
-	tapeGroup.POST("/:systemId/rec", handlers.StartRecording)
-	tapeGroup.POST("/:systemId/stop", handlers.StopRecording)
-	tapeGroup.GET("/:systemId/available", handlers.AvailableTapes)
-	tapeGroup.GET("/:systemId/recording", handlers.GetRecording)
-	tapeGroup.GET("/:systemId/download/:id", handlers.DownloadTape)
-	tapeGroup.POST("/:systemId/play", handlers.Play)
+	tapeGroup.POST("/:systemID/rec", handlers.StartRecording)
+	tapeGroup.POST("/:systemID/stop", handlers.StopRecording)
+	tapeGroup.GET("/:systemID/availables", handlers.AvailableTapes)
+	tapeGroup.GET("/:systemID/recording", handlers.GetRecording)
+	tapeGroup.GET("/:systemID/download/:id", handlers.DownloadTape)
+	tapeGroup.POST("/:systemID/play", handlers.Play)
 
 	// Start server
 	port := infra.GetEnv("PORT", "6081")

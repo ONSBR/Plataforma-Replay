@@ -7,8 +7,11 @@ import (
 
 //StopRecording for an application
 func StopRecording(ctx echo.Context) error {
-	systemID := ctx.Get("systemID").(string)
+	systemID := ctx.Param("systemID")
 	rec := recorder.GetRecorder(systemID)
+	if !rec.IsRecording() {
+		return ctx.String(404, "")
+	}
 	tape, err := rec.GetTape(systemID)
 	if err != nil {
 		return err
@@ -17,5 +20,5 @@ func StopRecording(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return ctx.JSON(201, tape)
+	return ctx.JSON(200, tape)
 }

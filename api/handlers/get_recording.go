@@ -9,7 +9,7 @@ import (
 
 //GetRecording return available tapes for system
 func GetRecording(ctx echo.Context) error {
-	systemID := ctx.Get("systemID").(string)
+	systemID := ctx.Param("systemID")
 
 	rec := recorder.GetRecorder(systemID)
 	tape, err := rec.GetTape(systemID)
