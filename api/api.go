@@ -18,6 +18,7 @@ func RunAPI() {
 	group := e.Group("v1")
 	tapeGroup := group.Group("/tape")
 	// Routes
+	tapeGroup.DELETE("/:tapeID", handlers.DeleteTape)
 	tapeGroup.POST("/:systemID/rec", handlers.StartRecording)
 	tapeGroup.POST("/:systemID/stop", handlers.StopRecording)
 	tapeGroup.GET("/:systemID/availables", handlers.AvailableTapes)

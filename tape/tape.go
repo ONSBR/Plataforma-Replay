@@ -9,7 +9,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/ONSBR/Plataforma-EventManager/domain"
+	"github.com/labstack/gommon/log"
 )
 
 //Tape is datalog struct to keep all events, dump file and metadata
@@ -165,4 +167,15 @@ func GetTape(systemID, path string) (*Tape, error) {
 		}
 	}
 	return tape, nil
+}
+
+//Delete tape from disk
+func Delete(tapeID string) error {
+	if tapeID == "" {
+		return fmt.Errorf("empty tapeID")
+	}
+	path := env.Get("TAPES_PATH", "~/tapes")
+	str := fmt.Sprintf("%s/%s", path, tapeID)
+	log.Info("removing file at:", str)
+	return os.Remove(str)
 }

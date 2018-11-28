@@ -1,8 +1,7 @@
 package rabbitmq
 
 import (
-	"os"
-
+	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/PMoneda/carrot"
 	"github.com/labstack/gommon/log"
 )
@@ -13,9 +12,9 @@ var broker *RabbitBroker
 func Init() {
 
 	config := carrot.ConnectionConfig{
-		Host:     os.Getenv("RABBITMQ_HOST"),
-		Username: os.Getenv("RABBITMQ_USERNAME"),
-		Password: os.Getenv("RABBITMQ_PASSWORD"),
+		Host:     env.Get("RABBITMQ_HOST", "localhost"),
+		Username: env.Get("RABBITMQ_USERNAME", "guest"),
+		Password: env.Get("RABBITMQ_PASSWORD", "guest"),
 		VHost:    "/",
 	}
 

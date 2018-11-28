@@ -26,6 +26,6 @@ func GetRecorder(systemID string) Recorder {
 func newDefaultRecorder(systemID string) Recorder {
 	rec := new(DefaultRecorder)
 	rec.systemID = systemID
-	rec.path = env.Get("TAPES_PATH", "./")
+	rec.path = env.Get("TAPES_PATH", "~/tapes")
 	return rec
 }
