@@ -28,11 +28,15 @@ Observação: A ideia é que o serviço de replay não seja um gargalo de execu�
 mas a execução do processo irá continuar;
 TODO: traduzir para o inglês de forma adequada!*/
 func ReceiveEvent(event *domain.Event) error {
+	log.Info("received event %s from system %s", event.Name, event.SystemID)
 	recorder := recorder.GetRecorder(event.SystemID)
+	log.Info("recording event")
 	err := recorder.Rec(event)
+	log.Info("event recorded")
 	if err != nil {
 		log.Error(err)
 	}
 	brk := broker.GetBroker()
+	log.Info("publishing event to execution")
 	return brk.Publish(event)
 }
