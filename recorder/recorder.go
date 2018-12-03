@@ -1,7 +1,6 @@
 package recorder
 
 import (
-	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/ONSBR/Plataforma-Replay/tape"
 )
@@ -26,6 +25,6 @@ func GetRecorder(systemID string) Recorder {
 func newDefaultRecorder(systemID string) Recorder {
 	rec := new(DefaultRecorder)
 	rec.systemID = systemID
-	rec.path = env.Get("TAPES_PATH", "~/tapes")
+	rec.path = tape.GetTapesPath()
 	return rec
 }

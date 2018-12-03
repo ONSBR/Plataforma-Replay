@@ -151,6 +151,10 @@ func GetOrCreateTape(systemID, path string) (*Tape, error) {
 	return tape, nil
 }
 
+func GetTapesPath() string {
+	return env.Get("TAPES_PATH", "~/tapes")
+}
+
 func GetTape(systemID, path string) (*Tape, error) {
 	tape := new(Tape)
 	tape.Path = path
@@ -174,7 +178,7 @@ func Delete(tapeID string) error {
 	if tapeID == "" {
 		return fmt.Errorf("empty tapeID")
 	}
-	path := env.Get("TAPES_PATH", "~/tapes")
+	path := GetTapesPath()
 	str := fmt.Sprintf("%s/%s", path, tapeID)
 	log.Info("removing file at:", str)
 	return os.Remove(str)
