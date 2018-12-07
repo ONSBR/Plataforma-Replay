@@ -11,7 +11,7 @@ type Recorder interface {
 	Eject() (*tape.Tape, error)
 	IsRecording() bool
 	GetOrCreateTape(systemID string) (*tape.Tape, error)
-	GetTape(systemID string) (*tape.Tape, error)
+	GetTape() (*tape.Tape, error)
 	InsertTape(tape *tape.Tape)
 	AvailableTapesToDownload(systemID string) ([]string, error)
 	TapePath(name string) string

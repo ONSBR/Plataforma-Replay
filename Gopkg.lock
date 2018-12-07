@@ -12,9 +12,10 @@
   name = "github.com/ONSBR/Plataforma-Deployer"
   packages = [
     "env",
-    "sdk/apicore"
+    "sdk/apicore",
+    "sdk/eventmanager"
   ]
-  revision = "c8d520715f8c339e5fbb20b38eaa75bc405f9bd9"
+  revision = "e60bed4364206a75c134d406356d7e863ec57647"
 
 [[projects]]
   branch = "master"
@@ -41,7 +42,7 @@
   branch = "master"
   name = "github.com/PMoneda/whaler"
   packages = ["."]
-  revision = "1334b0503fa5e28a8e41f04f322e3300f45dbdb4"
+  revision = "55fca82fbeaf82f8660e823de4f098a3fd472ee6"
 
 [[projects]]
   name = "github.com/dgrijalva/jwt-go"
@@ -140,6 +141,15 @@
   ]
   revision = "2a618302b929cc20862dda3aa6f02f64dbe740dd"
   version = "v0.2.7"
+
+[[projects]]
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid"
+  ]
+  revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -243,6 +253,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "22784dcd332cfa852acc1b631aa7070f63cd140327b851832d04fe3a6194647a"
+  inputs-digest = "a36dd83043d72b1c4780a29a6bd389c6e6243240eded92dde788b80a4c14e0de"
   solver-name = "gps-cdcl"
   solver-version = 1

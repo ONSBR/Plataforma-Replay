@@ -30,15 +30,37 @@ type Segment struct {
 	Content     *bufio.Reader `json:"-"`
 }
 
+func (seg *Segment) IsEvent() bool {
+	return seg.SegmentType == "event"
+}
+
+func (seg *Segment) Event(t *Tape) (*domain.Event, error) {
+	if !seg.IsEvent() {
+		return nil, fmt.Errorf("Segment is not an event")
+	}
+	if buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", t.Dest(), seg.FileName)); err != nil {
+		return nil, err
+	} else {
+		evt := new(domain.Event)
+		if err := json.Unmarshal(buf, evt); err != nil {
+			return nil, err
+		}
+		return evt, nil
+	}
+}
+
 //Record write segment into disk and update tape.json file
 func (t *Tape) Record(seg *Segment) error {
-	fd, err := os.Create(fmt.Sprintf("%s/%s/%s", t.Path, t.SystemID, seg.FileName))
-	if err != nil {
-		return err
+	if seg.Content != nil {
+		fd, err := os.Create(fmt.Sprintf("%s/%s", t.Dest(), seg.FileName))
+		if err != nil {
+			return err
+		}
+		if _, err := seg.Content.WriteTo(fd); err != nil {
+			return err
+		}
+		fd.Close()
 	}
-	seg.Content.WriteTo(fd)
-	fd.Close()
-
 	t.Segments = append(t.Segments, seg)
 	return t.persist()
 }
@@ -56,7 +78,7 @@ func (t *Tape) Close() error {
 	if err != nil {
 		return err
 	}
-	origin := fmt.Sprintf("%s/%s", t.Path, t.SystemID)
+	origin := t.Dest()
 	buf := bytes.NewBuffer(nil)
 	if err := compress(origin, buf); err != nil {
 		return err
@@ -97,7 +119,7 @@ func (t *Tape) RecordReader(fileName, segmentType string, reader *bufio.Reader) 
 
 //Dest returns a destination path to tape files
 func (t *Tape) Dest() string {
-	return t.Path
+	return fmt.Sprintf("%s/%s", t.Path, t.SystemID)
 }
 
 func (t *Tape) persist() error {
@@ -152,7 +174,7 @@ func GetOrCreateTape(systemID, path string) (*Tape, error) {
 }
 
 func GetTapesPath() string {
-	return env.Get("TAPES_PATH", "~/tapes")
+	return env.Get("TAPES_PATH", "./tapes")
 }
 
 func GetTape(systemID, path string) (*Tape, error) {
@@ -182,4 +204,9 @@ func Delete(tapeID string) error {
 	str := fmt.Sprintf("%s/%s", path, tapeID)
 	log.Info("removing file at:", str)
 	return os.Remove(str)
+}
+
+//Restore tape file to a folder on  tape's path
+func Restore(systemID string, tapeID string) error {
+	return decompress(fmt.Sprintf("%s/%s", GetTapesPath(), tapeID), fmt.Sprintf("%s/%s", GetTapesPath(), systemID))
 }

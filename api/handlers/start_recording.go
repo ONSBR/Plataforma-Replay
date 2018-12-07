@@ -17,5 +17,8 @@ func StartRecording(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
+	if !tape.IsRecording() {
+		ctx.JSON(400, H{"message": "cannot start recording"})
+	}
 	return ctx.JSON(201, tape)
 }

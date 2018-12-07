@@ -52,3 +52,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/ONSBR/Plataforma-Deployer"
+
+[[constraint]]
+  name = "github.com/mholt/archiver"
+  version = "3.1.0"
+
+[[constraint]]
+  name = "github.com/lib/pq"
+  version = "1.0.0"

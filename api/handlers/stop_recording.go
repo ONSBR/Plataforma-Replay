@@ -12,7 +12,7 @@ func StopRecording(ctx echo.Context) error {
 	if !rec.IsRecording() {
 		return ctx.String(404, "")
 	}
-	tape, err := rec.GetTape(systemID)
+	tape, err := rec.GetTape()
 	if err != nil {
 		return err
 	}

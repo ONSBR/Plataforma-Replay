@@ -26,7 +26,7 @@ func RunAPI() {
 	tapeGroup.GET("/:systemID/availables", handlers.AvailableTapes)
 	tapeGroup.GET("/:systemID/recording", handlers.GetRecording)
 	tapeGroup.GET("/:systemID/download/:id", handlers.DownloadTape)
-	tapeGroup.POST("/:systemID/play", handlers.Play)
+	tapeGroup.POST("/:systemID/play/:id", handlers.Play)
 
 	// Start server
 	port := infra.GetEnv("PORT", "6081")

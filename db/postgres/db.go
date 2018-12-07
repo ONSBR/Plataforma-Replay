@@ -1,10 +1,13 @@
 package postgres
 
 import (
-	"bufio"
+	"database/sql"
 	"fmt"
+	"io/ioutil"
 
-	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
+	_ "github.com/lib/pq"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
 
@@ -14,51 +17,54 @@ import (
 type DBPostgres struct {
 }
 
-func (db *DBPostgres) Backup(systemID string) (*bufio.Reader, error) {
-	if dbName, err := db.getDbName(systemID); err != nil {
-		return nil, err
+func (db *DBPostgres) Backup(dbName, path string) error {
+	log.Info("dumping database ", dbName, " to ", path)
+	if r, err := whaler.RunCommand("postgres", "pg_dump", "-U", env.Get("POSTGRES_USER", "postgres"), "-d", dbName, "-f", path); err != nil {
+		log.Error(err)
+		return err
 	} else {
-		if output, err := whaler.RunCommand("postgres", "pg_dump", "-U", env.Get("POSTGRES_USER", "postgres"), dbName); err != nil {
-			return nil, err
-		} else {
-			buf := make([]byte, 8)
-			_, err = output.Read(buf) //remove binary encoded bytes
-			if err != nil {
-				return nil, err
-			}
-			return output, nil
+		buf, _ := ioutil.ReadAll(r)
+		log.Info("postgres output")
+		log.Info(string(buf))
+	}
+	return nil
+}
+
+func (db *DBPostgres) Restore(dbName, path string) error {
+	if err := db.createDatabaseIfNotExist(dbName); err != nil {
+		log.Info(err.Error())
+		return err
+	}
+	if buf, err := whaler.RunCommand("postgres", "psql", "-U", env.Get("POSTGRES_USER", "postgres"), "-d", dbName, "-f", path); err != nil {
+		log.Info(err.Error())
+		return err
+	} else {
+		if _, err := ioutil.ReadAll(buf); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
-func (db *DBPostgres) getDbName(systemID string) (string, error) {
-	response := make([]map[string]interface{}, 0)
-	apicore.Query(apicore.Filter{
-		Entity: "installedApp",
-		Map:    "core",
-		Name:   "bySystemIdAndType",
-		Params: []apicore.Param{
-			apicore.Param{
-				Key:   "systemId",
-				Value: systemID,
-			},
-			apicore.Param{
-				Key:   "type",
-				Value: "domain",
-			},
-		},
-	}, &response)
-	if len(response) == 0 {
-		return "", fmt.Errorf("Cannot find database name for system %s", systemID)
-	}
-	switch t := response[0]["name"].(type) {
-	case string:
-		return t, nil
-	default:
-		return "", fmt.Errorf("Invalid datatype for database name")
-	}
-}
+func (db *DBPostgres) createDatabaseIfNotExist(name string) error {
+	dbinfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		env.Get("POSTGRES_HOST", "localhost"), env.Get("POSTGRES_PORT", "5432"), env.Get("POSTGRES_USER", "postgres"), env.Get("POSTGRES_PASSWORD", "postgres"), "postgres")
 
-func (db *DBPostgres) Restore(systemID, path string) error {
+	dataConn, err := sql.Open("postgres", dbinfo)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer dataConn.Close()
+	dataConn.SetMaxOpenConns(1)
+	dataConn.SetMaxIdleConns(1)
+	log.Info("droping database")
+	if _, err := dataConn.Exec(fmt.Sprintf("DROP DATABASE %s", name)); err != nil {
+		log.Error(err)
+	}
+	log.Info("creating database ", name)
+	if _, err := dataConn.Exec(fmt.Sprintf("CREATE DATABASE %s", name)); err != nil {
+		return err
+	}
 	return nil
 }
