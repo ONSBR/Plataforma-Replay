@@ -48,19 +48,21 @@ func (p *defaultPlayer) Play(tapeID string) error {
 	if err != nil {
 		return err
 	}
-	if err := p.stopDomainContaners(dbName); err != nil {
+	if err := p.StopDomainContaners(dbName); err != nil {
 		return err
 	}
 	if err := tape.Restore(p.systemID, tapeID); err != nil {
 		return err
 	}
-	if err := p.restoreDataBase(); err != nil {
+	if err := p.RestoreDataBase(); err != nil {
 		return err
 	}
-	if err := p.startDomainContaners(dbName); err != nil {
+	if err := p.StartDomainContaners(dbName); err != nil {
 		return err
 	}
-	if err := p.emitEvents(); err != nil {
+	if events, err := p.GetEventsFromTape(); err != nil {
+		return err
+	} else if err := p.EmitEvents(events); err != nil {
 		return err
 	}
 	//in the end remove opened tape after send all events
@@ -73,7 +75,7 @@ func (p *defaultPlayer) Play(tapeID string) error {
 	return nil
 }
 
-func (p *defaultPlayer) stopDomainContaners(name string) error {
+func (p *defaultPlayer) StopDomainContaners(name string) error {
 	containers, err := whaler.GetContainers(false)
 	if err != nil {
 		return err
@@ -89,7 +91,7 @@ func (p *defaultPlayer) stopDomainContaners(name string) error {
 	return nil
 }
 
-func (p *defaultPlayer) startDomainContaners(name string) error {
+func (p *defaultPlayer) StartDomainContaners(name string) error {
 	containers, err := whaler.GetContainers(true)
 	if err != nil {
 		return err
@@ -104,7 +106,7 @@ func (p *defaultPlayer) startDomainContaners(name string) error {
 	return nil
 }
 
-func (p *defaultPlayer) restoreDataBase() error {
+func (p *defaultPlayer) RestoreDataBase() error {
 	dbName, err := sdk.GetDBName(p.systemID)
 	if err != nil {
 		return err
@@ -112,26 +114,34 @@ func (p *defaultPlayer) restoreDataBase() error {
 	return db.GetDB().Restore(dbName, fmt.Sprintf("%s/%s/dump.sql", tape.GetTapesPath(), p.systemID))
 }
 
-func (p *defaultPlayer) emitEvents() error {
+func (p *defaultPlayer) GetEventsFromTape() ([]*domain.Event, error) {
 	t, err := tape.GetOrCreateTape(p.systemID, tape.GetTapesPath())
 	if err != nil {
-		return err
+		return nil, err
 	}
+	events := make([]*domain.Event, 0)
 	for _, seg := range t.Segments {
 		if seg.IsEvent() {
 			if event, err := seg.Event(t); err != nil {
-				return err
+				return nil, err
 			} else {
-				if err := p.emit(event); err != nil {
-					return err
-				}
+				events = append(events, event)
 			}
+		}
+	}
+	return events, nil
+}
+
+func (p *defaultPlayer) EmitEvents(events []*domain.Event) error {
+	for _, evt := range events {
+		if err := p.Emit(evt); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func (p *defaultPlayer) emit(event *domain.Event) error {
+func (p *defaultPlayer) Emit(event *domain.Event) error {
 	log.Info("emiting event ", event.Name)
 	return eventmanager.Push(event)
 }
