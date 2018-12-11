@@ -27,21 +27,26 @@ func TestShouldCheckIfTapeExist(t *testing.T) {
 
 func TestShouldGetOrCreateTape(t *testing.T) {
 	Convey("should get or create a new tape", t, func() {
-		tape, err := GetOrCreateTape("123", "./")
+		os.Mkdir("./tapes", os.ModePerm)
+		defer os.RemoveAll("./tapes")
+		tape, err := GetOrCreateTape("123", GetTapesPath())
 		So(err, ShouldBeNil)
 		So(tape.Exist(), ShouldBeTrue)
-		fd, err := os.OpenFile("./123/tape.json", os.O_RDONLY, os.ModePerm)
+		fd, err := os.OpenFile("./tapes/123/tape.json", os.O_RDONLY, os.ModePerm)
 		So(err, ShouldBeNil)
 		if err == nil {
 			fd.Close()
 		}
-		os.RemoveAll("./123")
+
 	})
 }
 
 func TestShouldSaveSegments(t *testing.T) {
+	os.Mkdir("./tapes", os.ModePerm)
+	defer os.RemoveAll("./tapes")
 	Convey("should save segments on tape", t, func() {
-		tape, err := GetOrCreateTape("1123", "./")
+
+		tape, err := GetOrCreateTape("1123", "./tapes")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
@@ -49,16 +54,14 @@ func TestShouldSaveSegments(t *testing.T) {
 		err = tape.RecordEvent(&evt)
 		So(err, ShouldBeNil)
 		So(len(tape.Segments), ShouldEqual, 1)
-		fd, _ := os.Open("./1123")
+		fd, _ := os.Open("./tapes/1123")
 		infos, _ := fd.Readdir(10)
 		So(len(infos), ShouldEqual, 2)
-
-		os.RemoveAll("./1123")
 
 	})
 
 	Convey("should save reader on tape", t, func() {
-		tape, err := GetOrCreateTape("1234", "./")
+		tape, err := GetOrCreateTape("1234", "./tapes")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
@@ -69,21 +72,20 @@ func TestShouldSaveSegments(t *testing.T) {
 		err = tape.RecordReader("dump.txt", "dump", r)
 		So(err, ShouldBeNil)
 		So(len(tape.Segments), ShouldEqual, 1)
-		fd, _ := os.Open("./1234")
+		fd, _ := os.Open("./tapes/1234")
 		infos, _ := fd.Readdir(10)
 		So(len(infos), ShouldEqual, 2)
-		os.RemoveAll("./1234")
+		os.RemoveAll("./tapes/1234")
 	})
 
 	Convey("should get existing tape", t, func() {
-		GetOrCreateTape("b1234", "./")
-		_, err := GetOrCreateTape("b1234", "./")
+		GetOrCreateTape("b1234", "./tapes")
+		_, err := GetOrCreateTape("b1234", "./tapes")
 		So(err, ShouldBeNil)
-		os.RemoveAll("./b1234")
 	})
 
 	Convey("should close tape", t, func() {
-		tape, err := GetOrCreateTape("a1234", "./")
+		tape, err := GetOrCreateTape("a1234", "./tapes")
 		So(err, ShouldBeNil)
 		evt := domain.Event{
 			Name: "event",
@@ -93,7 +95,7 @@ func TestShouldSaveSegments(t *testing.T) {
 		err = tape.RecordReader("dump.txt", "dump", r)
 		So(err, ShouldBeNil)
 		So(tape.Close(), ShouldBeNil)
-		fd1, _ := os.Open("./")
+		fd1, _ := os.Open("./tapes")
 		names, _ := fd1.Readdirnames(-1)
 
 		exist := false

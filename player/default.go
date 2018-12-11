@@ -76,6 +76,11 @@ func (p *defaultPlayer) Play(tapeID string) error {
 }
 
 func (p *defaultPlayer) StopDomainContaners(name string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("Recovered in f", r)
+		}
+	}()
 	containers, err := whaler.GetContainers(false)
 	if err != nil {
 		return err

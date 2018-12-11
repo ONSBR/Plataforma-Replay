@@ -154,7 +154,7 @@ func GetOrCreateTape(systemID, path string) (*Tape, error) {
 	tape.SystemID = systemID
 	tape.State = "recording"
 	if !tape.Exist() {
-		err := os.Mkdir(fmt.Sprintf("%s/%s", tape.Path, systemID), os.ModePerm)
+		err := os.Mkdir(fmt.Sprintf("%s/%s", GetTapesPath(), systemID), os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
@@ -170,6 +170,7 @@ func GetOrCreateTape(systemID, path string) (*Tape, error) {
 			return nil, err
 		}
 	}
+	tape.Path = path
 	return tape, nil
 }
 
@@ -192,6 +193,7 @@ func GetTape(systemID, path string) (*Tape, error) {
 			return nil, err
 		}
 	}
+	tape.Path = path
 	return tape, nil
 }
 
