@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PMoneda/http"
 	"github.com/PMoneda/whaler"
 
 	"github.com/ONSBR/Plataforma-EventManager/domain"
@@ -35,9 +36,18 @@ func TestPlayer(t *testing.T) {
 
 	Convey("play a test tape", t, func() {
 		os.Setenv("TAPES_PATH", testPath)
-		p := GetPlayer(systemID)
-		So(p.Play("ec498841-59e5-47fd-8075-136d79155705_1544212971.rec"), ShouldBeNil)
-		os.RemoveAll(fmt.Sprintf("%s/%s", testPath, systemID))
+		mock := http.ReponseMock{
+			Method:      "PUT",
+			ReponseBody: "ok",
+			URL:         "http://localhost:8081/sendevent",
+		}
+		http.With(t, func(ctx *http.MockContext) {
+			ctx.RegisterMock(&mock)
+			p := GetPlayer(systemID)
+			So(p.Play("ec498841-59e5-47fd-8075-136d79155705_1544212971.rec"), ShouldBeNil)
+			os.RemoveAll(fmt.Sprintf("%s/%s", testPath, systemID))
+		})
+
 	})
 
 	Convey("should return error when event manager is down", t, func() {

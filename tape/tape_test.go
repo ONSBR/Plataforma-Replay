@@ -25,6 +25,20 @@ func TestShouldCheckIfTapeExist(t *testing.T) {
 	})
 }
 
+func TestShouldDeleteTape(t *testing.T) {
+	Convey("should delete tape", t, func() {
+		tape := new(Tape)
+		tape.Path = "./tapes/"
+		tape.SystemID = "1223"
+		os.MkdirAll("./tapes/1223", os.ModePerm)
+		So(Delete("1223"), ShouldBeNil)
+		_, err := os.Open("./tapes/1223")
+		So(err, ShouldNotBeNil)
+		os.RemoveAll("./tapes")
+
+	})
+}
+
 func TestShouldGetOrCreateTape(t *testing.T) {
 	Convey("should get or create a new tape", t, func() {
 		os.Mkdir("./tapes", os.ModePerm)
@@ -109,5 +123,26 @@ func TestShouldSaveSegments(t *testing.T) {
 		So(exist, ShouldBeTrue)
 		os.Remove(fName)
 		So(tape.Exist(), ShouldBeFalse)
+	})
+}
+
+func TestSegments(t *testing.T) {
+	SystemID := "ec498841-59e5-47fd-8075-136d79155705"
+	TapeID := "ec498841-59e5-47fd-8075-136d79155705_1544212971.rec"
+	Convey("should check if segment is an event", t, func() {
+		seg := Segment{
+			SegmentType: "event",
+		}
+		So(seg.IsEvent(), ShouldBeTrue)
+		seg.SegmentType = "other"
+		So(seg.IsEvent(), ShouldBeFalse)
+	})
+
+	Convey("should get tape", t, func() {
+		os.Setenv("TAPES_PATH", "../test_files")
+		So(Restore(SystemID, TapeID), ShouldBeNil)
+		_, err := GetTape(SystemID, "../test_files")
+		So(err, ShouldBeNil)
+		os.RemoveAll("../test_files/" + SystemID)
 	})
 }
