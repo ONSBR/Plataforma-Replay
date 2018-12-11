@@ -25,6 +25,7 @@ func RunAPI() {
 	tapeGroup.POST("/:systemID/stop", handlers.StopRecording)
 	tapeGroup.GET("/:systemID/availables", handlers.AvailableTapes)
 	tapeGroup.GET("/:systemID/recording", handlers.GetRecording)
+	tapeGroup.POST("/:systemID/record", handlers.RecordEvent)
 	tapeGroup.GET("/:systemID/download/:id", handlers.DownloadTape)
 	tapeGroup.POST("/:systemID/play/:id", handlers.Play)
 
